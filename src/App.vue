@@ -1,28 +1,225 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="nav bg-dark w-100">
+        <a href="" class="navbar-brand">
+          NAVIGATION BAR
+        </a>
+      </nav>
+    </div>
+    <div class="row ">
+      <h1 class="mx-auto py-5 ">AUBYN'S TO-DO APPLICATION</h1>
+    </div>
+    <div v-if="todoDeleted">
+      <h1 class="mx-auto">Todo Has Been Deleted!</h1>
+    </div>
+    <div v-if="todoCreated">
+      <h1 class="mx-auto">Todo Has Been Created!</h1>
+    </div>
+    <template v-if="create">
+      <div class="row ">
+        <table class="  table-rounded mx-auto bg-white">
+          <tr @submit.prevent>
+            <td>
+              <input v-model="title" type="text" placeholder="Title" />
+            </td>
+            <td>
+              <input
+                v-model="description"
+                type="text"
+                placeholder="Description"
+              />
+            </td>
+            <td>
+              <button @click="createTodo" class="btn btn-info">Save</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </template>
+    <template v-if="edit">
+      <div class="row">
+        <table class=" table mx-auto bg-white">
+          <tr @submit.prevent>
+            <td>
+              <input
+                v-model="todoUpdate.title"
+                type="text"
+                placeholder="Title"
+              />
+            </td>
+            <td>
+              <input
+                v-model="todoUpdate.description"
+                type="text"
+                placeholder="Description"
+              />
+            </td>
+            <td>
+              <button
+                @click="updateTodo(todoUpdate.id)"
+                class="btn btn-success"
+              >
+                Update
+              </button>
+            </td>
+            <td>
+              <button
+                @click="(create = true), (edit = false)"
+                class="btn btn-secondary"
+              >
+                Cancel
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </template>
+    <div class="row  ">
+      <div class="col d-flex mx-auto p-5">
+        <table
+          class=" table-bordered table rounded w-50 mx-auto bg-white rounded-5 p-5"
+        >
+          <tr class="my-5" :key="index" v-for="(todo, index) in todo">
+            <td>{{ `${todo.title}` }}</td>
+            <td>{{ `${todo.description}` }}</td>
+            <td>
+              <button @click="deleteTodo(todo.id)" class="btn btn-danger">
+                Delete
+              </button>
+            </td>
+            <td>
+              <button
+                @click="
+                  (create = false), (edit = true);
+                  getTodoUpdate(todo);
+                "
+                class="btn btn-primary"
+              >
+                Edit
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </div>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import axios from "axios";
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  name: "App",
+  data() {
+    return {
+      id: ``,
+      todoDeleted: false,
+      todoCreationError: false,
+      todoCreated: false,
+      route: "/api/todo/",
+      form: {},
+      todo: [],
+      title: "",
+      description: "",
+      create: true,
+      edit: false,
+      todoUpdate: {},
+    };
+  },
+  mounted() {
+    this.getTodo();
+    console.log(this.getTodo);
+  },
+
+  methods: {
+    getTodo() {
+      axios
+        .get("/api/todo")
+        .then(({ data }) => {
+          this.todo = [...data];
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+
+    getTodoUpdate(todo) {
+      this.todoUpdate = { ...todo };
+    },
+
+    createTodo() {
+      axios
+        .post(this.route, {
+          title: this.title,
+          description: this.description,
+        })
+        .then(() => {
+          this.getTodo();
+          this.todoCreated = true;
+          this.title = "";
+          this.description = "";
+        })
+
+        .catch((e) => {
+          this.todoCreationError = true;
+          console.log("error during create", e);
+        });
+    },
+    updateTodo(id) {
+      axios
+        .put(this.route + id, {
+          title: this.todoUpdate.title,
+          description: this.todoUpdate.description,
+        })
+        .then(() => {
+          this.todoCreated = true;
+          this.todoCreationError = false;
+          this.getTodo();
+          this.create = true;
+          this.edit = false;
+        })
+
+        .catch((e) => {
+          this.todoCreationError = true;
+          console.log("error during create", e);
+        });
+    },
+    deleteTodo(id) {
+      axios
+        .delete("/api/todo/" + id)
+        .then(() => {
+          this.todoCreated = false;
+
+          this.getTodo();
+          this.todoDeleted = true;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+@import url("https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap");
+
+* {
+  font-family: "Architects Daughter", cursive;
+  font-weight: 700;
+}
+
+.container-fluid {
+  background-image: url(https://wallpapercave.com/wp/wp5129083.jpg);
+  height: 100vh;
+  width: 100%;
+  background-attachment: fixed;
+  background-position: center;
+  background-size: cover;
+}
+
+.table th {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  padding: 50px;
 }
 </style>
