@@ -4,18 +4,8 @@
 
 <script>
 export default {
-  data() {
-
-    return {
-      store: this.$store.state.app,
-    }
-  },
-  created() {
-
-    this.store.dispatch('app/init')
-
-console.log(this.$store.state);
-
+  async created() {
+    await this.$store.dispatch("app/init");
   },
 };
 </script>

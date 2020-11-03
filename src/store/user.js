@@ -1,16 +1,11 @@
-import Vue from "vue"; // import vue because you want a new instance of VUE
-import { router } from "../routes"; //if you want to access the routes,
-//you need to tell this file, where they are. So you must import it.
+import Vue from "vue"; // import vue because
+import { router } from "../routes";
 
 const state = {
   token: localStorage.getItem("token"),
 };
 
-const getters = {
-  activeToken: (state) => {
-    return state.token;
-  },
-};
+const getters = {};
 
 const actions = {
   init({ commit }) {
@@ -28,16 +23,15 @@ const actions = {
 };
 
 const mutations = {
-  setToken(state, token) {
-    Vue.prototype.$axios.defaults.headers["authorization"] = `Bearer ${token}`;
-
-    state.token = token;
+  setToken(state, arg) {
+    state.token = arg;
     // this.$axios or the "this" instance is not available in the stores
     // once we obtain the token we set the authorization to send back to our server
+    Vue.prototype.$axios.defaults.headers["authorization"] = `Bearer ${arg}`;
   },
 };
 
-export const app = {
+export const user = {
   namespaced: true,
   state,
   getters,

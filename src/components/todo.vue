@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="tokenIsPresent">
     <div class="row">
       <nav class="nav bg-dark w-100">
         <a href="" class="navbar-brand">
@@ -77,7 +77,7 @@
           class=" table-bordered table rounded w-50 mx-auto bg-white rounded-5 p-5"
         >
           <tr class="my-5" :key="index" v-for="(todo, index) in todo">
-            <td>{{ `${todo.title}` }}</td>
+            <td>{{ `${todo.name}` }}</td>
             <td>{{ `${todo.description}` }}</td>
             <td>
               <button @click="deleteTodo(todo.id)" class="btn btn-danger">
@@ -102,7 +102,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 
 export default {
   name: "App",
@@ -120,16 +119,23 @@ export default {
       create: true,
       edit: false,
       todoUpdate: {},
+      state: this.$store.state.app,
+      name: ""
     };
   },
   mounted() {
     this.getTodo();
-    console.log(this.getTodo);
+
+  },
+  computed: {
+tokenIsPresent(){
+  return this.$store.getters["/app/activeToken"] !== null;
+}
   },
 
   methods: {
     getTodo() {
-      axios
+      this.$axios
         .get("/api/todos")
         .then(({ data }) => {
           this.todo = [...data];
@@ -144,7 +150,7 @@ export default {
     },
 
     createTodo() {
-      axios
+      this.$axios
         .post(this.route, {
           name: this.name,
           description: this.description,
@@ -152,7 +158,7 @@ export default {
         .then(() => {
           this.getTodo();
           this.todoCreated = true;
-          this.title = "";
+          this.name = "";
           this.description = "";
         })
 
@@ -162,7 +168,7 @@ export default {
         });
     },
     updateTodo(id) {
-      axios
+      this.$axios
         .put(this.route + id, {
           title: this.todoUpdate.name,
           description: this.todoUpdate.description,
@@ -181,7 +187,7 @@ export default {
         });
     },
     deleteTodo(id) {
-      axios
+      this.$axios
         .delete("/api/todos/" + id)
         .then(() => {
           this.todoCreated = false;
